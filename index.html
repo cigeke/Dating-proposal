@@ -1,0 +1,533 @@
+﻿<!DOCTYPE html>
+<html lang="so">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ballan ❤️</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      padding: 24px 0; font-family: Arial, sans-serif;
+      background: linear-gradient(135deg,#fff7fa 0%,#ffe8f0 52%,#f9e3ed 100%);
+      color: #4b2634;
+    }
+    .app {
+      width: min(94%, 760px); background: #fff; border-radius: 30px;
+      padding: 34px 36px; box-shadow: 0 22px 62px #d88ba844;
+      text-align: center; border: 1px solid #fff9fb;
+    }
+    .heart { font-size: 48px; animation: beat 1.2s infinite; }
+    .ask-decoration { font-size:72px; }
+    .no-decoration { font-size:65px; }
+    @keyframes beat { 50% { transform: scale(1.12); } }
+    h1 { margin: 10px 0 8px; font-size: 28px; }
+    p { color:#8b6875; margin-bottom: 22px; }
+    .screen { display:none; }
+    .screen.active { display:block; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .section-title { margin:26px 0 0; font-size:21px; }
+    .section-copy { margin:8px 0 18px; }
+    .choice {
+      position:relative; display:flex; flex-direction:column; align-items:stretch; gap:0;
+      width:100%; min-width:0; margin:0; padding:8px; border:1px solid #f1e6eb;
+      background:#fffafd; color:#4b2634; border-radius:19px; cursor:pointer;
+      font-size:15px; text-align:left; overflow:hidden;
+      box-shadow:0 5px 15px #8a4a5b0d;
+      transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease;
+    }
+    .choice:hover { border-color:#edb1c4; background:#fff7fa; transform:translateY(-2px); box-shadow:0 9px 22px #c85d7c1b; }
+    .choice.selected { border:2px solid #df7396; padding:7px; background:#fff2f6; box-shadow:0 8px 22px #d768891c; }
+    .choice:focus-visible { outline:3px solid #c95f82; outline-offset:3px; }
+    .choice::after { content:"✓"; position:absolute; top:14px; right:14px; display:grid; place-items:center; width:25px; height:25px; border-radius:50%; color:#fff; background:#d65f86; font-size:15px; font-weight:700; opacity:0; transform:scale(.75); transition:opacity .18s ease,transform .18s ease; box-shadow:0 2px 7px #8c35504d; }
+    .choice.selected::after { opacity:1; transform:scale(1); }
+    .food-photo-wrap { display:block; position:relative; width:100%; height:116px; margin-bottom:10px; overflow:hidden; border-radius:13px; background:linear-gradient(135deg,#fce8ef,#f9dbe7); }
+    .food-photo { display:block; width:100%; height:100%; object-fit:cover; transition:transform .28s ease; }
+    .choice:hover .food-photo { transform:scale(1.04); }
+    .food-photo-fallback { display:none; width:100%; height:100%; align-items:center; justify-content:center; color:#a66b7d; font-size:12px; }
+    .food-photo-fallback.visible { display:flex; }
+    .choice-label { display:block; padding:0 7px 5px; font-weight:700; }
+    .restaurant-mark { display:flex; align-items:center; justify-content:center; height:88px; margin:2px 2px 9px; border-radius:13px; background:linear-gradient(135deg,#fff5f8,#fffafd); }
+    .restaurant-logo { display:block; max-width:80%; max-height:56px; width:auto; height:auto; object-fit:contain; }
+    .restaurant-wordmark { display:flex; align-items:center; justify-content:center; padding:0 12px; color:#923d5a; font-family:Georgia,serif; font-size:clamp(17px,3.2vw,22px); font-weight:700; letter-spacing:.045em; text-align:center; }
+    .restaurant-name { display:block; padding:0 7px; font-weight:700; text-align:center; }
+    .brand-status { display:block; min-height:26px; padding:5px 4px 1px; color:#96717f; font-size:10px; line-height:1.3; text-align:center; }
+    .brand-status.verified { color:#657f69; }
+    .choice.loading .food-photo-wrap::before { content:""; position:absolute; inset:0; z-index:1; background:linear-gradient(100deg,transparent 20%,#ffffff88 50%,transparent 80%); transform:translateX(-100%); animation:shimmer 1.35s infinite; }
+    @keyframes shimmer { to { transform:translateX(100%); } }
+    input, select {
+      width:100%; padding:15px; margin:8px 0 14px; border:1px solid #ead5dd;
+      border-radius:14px; font-size:16px; background:#fff;
+    }
+    button {
+      border:0; border-radius:16px; padding:15px 22px; font-size:16px;
+      cursor:pointer; background:#e889a7; color:#fff; width:100%;
+      margin-top:10px;
+    }
+    button:hover { background:#dc7092; }
+    .secondary { background:#f3d9e2; color:#663747; }
+    .answers { display:flex; gap:12px; }
+    .answers button { flex:1; }
+    #nextFoodButton { margin-top:22px; background:linear-gradient(135deg,#e987a6,#d75c85); box-shadow:0 8px 18px #d66e8e40; font-weight:700; transition:transform .2s,box-shadow .2s,filter .2s; }
+    #nextFoodButton:hover { background:linear-gradient(135deg,#df7396,#cc4f78); transform:translateY(-2px); box-shadow:0 11px 24px #d66e8e54; }
+    #noBtn { background:#eee3e8; color:#694957; }
+    .result { font-size:22px; line-height:1.5; }
+    .small { font-size:13px; color:#aa8793; }
+    .home-link-wrap { margin-top:18px; text-align:left; }
+    .home-link {
+      display:inline-flex; align-items:center; gap:7px; padding:7px 13px;
+      border:1px solid #e88baa; border-radius:999px; background:#fff;
+      color:#c95f82; font-size:14px; line-height:1; text-decoration:none;
+      transition:background .2s, transform .2s;
+    }
+    .home-link:hover { background:#fff0f5; transform:translateY(-2px); }
+    .home-link:focus-visible { outline:2px solid #c95f82; outline-offset:3px; }
+    .share-actions { display:grid; gap:8px; margin-top:16px; }
+    .share-actions button, .invite-actions button { margin-top:0; }
+    .share-actions .secondary, .invite-actions .secondary { background:#fff; color:#c95f82; border:1px solid #e88baa; }
+    .status { display:inline-block; margin:8px 0; padding:6px 12px; border-radius:999px; background:#fff0f5; color:#a94e6e; font-size:14px; }
+    .invite-details { text-align:left; background:#fff8fa; border-radius:16px; padding:14px; margin:18px 0; line-height:1.8; }
+    .invite-actions { display:grid; gap:8px; }
+    [hidden] { display:none !important; }
+    .feedback { min-height:20px; margin:10px 0 0; font-size:14px; color:#8b6875; }
+    .feedback.error { color:#b03c59; }
+    .cancel-button { background:#f3d9e2; color:#663747; }
+    button:disabled { opacity:.65; cursor:wait; }
+    @media (max-width:540px) { body { padding:14px 0; place-items:start center; } .app { width:min(94%,460px); padding:25px 16px; border-radius:25px; } .grid { gap:10px; } .food-photo-wrap { height:100px; } .restaurant-mark { height:76px; } }
+    @media (max-width:360px) { .app { padding:22px 13px; } .answers { gap:8px; } .answers button { padding:13px 10px; } .choice { padding:6px; } .choice.selected { padding:5px; } .food-photo-wrap { height:86px; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="screen active" id="food">
+      <div class="heart">💗</div>
+      <h1>Maxaad jeclaan lahayd?</h1>
+      <p>Dooro cuntada aan wada cuneeyno 🍽️</p>
+      <div class="grid" id="foodChoices" role="group" aria-label="Dooro cuntada"></div>
+      <h2 class="section-title">Makhaayaddee aad jeclaan lahayd?</h2>
+      <p class="section-copy">Dooro meesha aan wax ka cuneyno 🍴</p>
+      <div class="grid" id="places" role="group" aria-label="Dooro makhaayadda"></div>
+      <button id="nextFoodButton">Sii wad <span aria-hidden="true">♥</span></button>
+    </section>
+
+    <section class="screen" id="date">
+      <div class="heart">📅</div>
+      <h1>Goorma ayaad firaaqo tahay?</h1>
+      <p>Dooro maalinta iyo waqtiga ✨</p>
+      <input type="date" id="day">
+      <select id="time">
+        <option value="">Dooro waqtiga...</option>
+        <option>12:00 Duhur</option><option>2:00 Galab</option>
+        <option>4:00 Galab</option><option>6:00 Fiid</option>
+        <option>7:00 Fiid</option><option>8:00 Fiid</option>
+      </select>
+      <button id="nextDateButton">Deji ballanta 💕</button>
+      <button class="secondary" id="backFoodButton">← Dib u noqo</button>
+    </section>
+
+    <section class="screen" id="ask">
+      <div class="ask-decoration">🌸🐱🌸</div>
+      <h1>Ma ila ballami lahayd?</h1>
+      <p id="summary"></p>
+      <div class="answers">
+        <button id="yesButton">HAA 💕</button>
+        <button id="noBtn">MAYA 🥺</button>
+      </div>
+    </section>
+
+    <section class="screen" id="yes">
+      <div class="heart">🥰</div>
+      <h1>Yaaay! ❤️</h1>
+      <p class="result">Waa la ballamay!<br>Waxaan sugayaa maalintaas 💕</p>
+      <p class="small" id="finalSummary"></p>
+      <div class="status" id="creatorStatus" aria-live="polite">Status: Pending</div>
+      <div class="share-actions">
+        <button id="whatsappButton">Send via WhatsApp</button>
+        <button class="secondary" id="copyButton">Copy Invitation Link</button>
+        <button class="secondary" id="refreshButton">Refresh Status</button>
+        <button class="secondary" id="copyManageButton">Copy Organizer Link</button>
+        <button class="cancel-button" id="cancelButton">Cancel Appointment</button>
+      </div>
+      <p class="feedback" id="creatorFeedback" aria-live="polite"></p>
+      <div class="home-link-wrap">
+        <a class="home-link" href="/" aria-label="Home">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 10 9-7 9 7"></path><path d="M5 9v12h14V9M9 21v-7h6v7"></path>
+          </svg>
+          <span>Home</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="screen" id="invite">
+      <div class="heart">💌</div>
+      <h1>Ballan casuumaad 💕</h1>
+      <p>Faahfaahinta ballantaada</p>
+      <div class="invite-details" id="inviteDetails"></div>
+      <div class="status" id="inviteStatus" aria-live="polite">Status: Loading…</div>
+      <button class="secondary" id="inviteRefreshButton">Refresh Status</button>
+      <div class="invite-actions" id="inviteActions" hidden>
+        <button id="acceptButton">Accept Appointment</button>
+        <button class="secondary" id="declineButton">Decline Appointment</button>
+      </div>
+      <button class="cancel-button" id="inviteCancelButton" hidden>Cancel Appointment</button>
+      <p class="feedback" id="inviteFeedback" aria-live="polite"></p>
+      <div class="home-link-wrap">
+        <a class="home-link" href="/" aria-label="Home">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 10 9-7 9 7"></path><path d="M5 9v12h14V9M9 21v-7h6v7"></path>
+          </svg><span>Home</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="screen" id="no">
+      <div class="no-decoration">🥺</div>
+      <h1>Haye... 😭</h1>
+      <p class="result">Mar kale ayaan isku dayayaa ❤️</p>
+      <button id="retryAskButton">Hal fursad kale? 🥹</button>
+    </section>
+  </main>
+
+<script>
+let food = "";
+let place = "";
+let selectedDate = "";
+let selectedTime = "";
+let createdAppointment = null;
+let invitationToken = null;
+let managerToken = null;
+let invitationLink = null;
+let organizerLink = null;
+let pendingStatusMessage = "";
+
+const foodOptions = [
+  { value: "Pizza", displayName: "Pizza", image: "/images/foods/pizza.jpg", alt: "Freshly baked pizza with tomato and melted cheese", source: "https://images.unsplash.com/photo-1579751626657-72bc17010498" },
+  { value: "Matcha", displayName: "Matcha", image: "/images/foods/matcha.jpg", alt: "Green matcha latte in a white cup", source: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7" },
+  { value: "Burger", displayName: "Burger", image: "/images/foods/burger.jpg", alt: "Cheeseburger layered with fresh vegetables", source: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd" },
+  { value: "Baasto", displayName: "Baasto", image: "/images/foods/baasto.jpg", alt: "Pasta with meat, tomato, and fresh herbs", source: "https://images.unsplash.com/photo-1551183053-bf91a1d81141" },
+  { value: "Tacos", displayName: "Tacos", image: "/images/foods/tacos.jpg", alt: "Tacos filled with seasoned meat, herbs, and lime", source: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85" },
+  { value: "Ubax", displayName: "Ubax", image: "/images/foods/ubax.jpg", alt: "Pink and white flowers arranged in a bright bouquet", source: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9" }
+];
+
+const restaurantOptions = [
+  { value: "Paparoti", displayName: "Paparoti", image: "/images/restaurants/paparoti-owner-upload.jpeg", verified: false, source: "Owner-provided logo asset: /images/restaurants/paparoti-owner-upload.jpeg", officialWebsite: null, location: "Wadajir (Medina), Mogadishu; directory spells it Papparoti, so exact-name match is unconfirmed." },
+  { value: "Mado", displayName: "MADO", image: "/images/restaurants/mado-official.png", verified: true, source: "https://mado.com.tr/yurt-disi-subeler/mogadishu-baanadir-mall/", logoSource: "https://mado.com.tr/wp-content/uploads/2022/08/Mado-Logo.png", officialWebsite: "https://mado.com.tr/", location: "Banaadir Mall, Laamiyaraha Soobe Junction, Bula Hubey, Mogadishu." },
+  { value: "Carshi", displayName: "Carshi", image: "/images/restaurants/carshi-owner-upload.jpeg", verified: false, source: "Owner-provided logo asset: /images/restaurants/carshi-owner-upload.jpeg", officialWebsite: "https://baraweholding.com/carshi-restaurant/", location: "Aleena Square, Zoobe, KM5, Mogadishu." },
+  { value: "Dilek", displayName: "Dilek", image: "/images/restaurants/dilek-owner-upload.jpeg", verified: false, source: "Owner-provided logo asset: /images/restaurants/dilek-owner-upload.jpeg", officialWebsite: null, location: "Digfer Road, Hodan, Mogadishu; the Tripadvisor listing is marked claimed." },
+  { value: "Karmel", displayName: "Karmel", image: "/images/restaurants/karmel-owner-upload.jpeg", verified: false, source: "Owner-provided logo asset: /images/restaurants/karmel-owner-upload.jpeg", officialWebsite: "https://www.facebook.com/karmelrestaurant/", location: "Digfer Road, Hodan, Mogadishu; government hospitality report also identifies Karmel Restaurant." },
+  { value: "Elite", displayName: "Elite", image: "/images/restaurants/elite-owner-upload.png", verified: false, source: "Owner-provided logo asset: /images/restaurants/elite-owner-upload.png", officialWebsite: null, location: "Wadada Liido, Mogadishu; the business listing is unclaimed, exact restaurant identity unconfirmed." }
+];
+
+function selectOption(grid, button) {
+  grid.querySelectorAll(".choice").forEach(option => {
+    const selected = option === button;
+    option.classList.toggle("selected", selected);
+    option.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function renderFoodOptions() {
+  const grid = document.getElementById("foodChoices");
+  foodOptions.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "choice";
+    button.setAttribute("aria-pressed", "false");
+    if (index > 1) button.classList.add("loading");
+    const imageWrap = document.createElement("span");
+    imageWrap.className = "food-photo-wrap";
+    const image = document.createElement("img");
+    image.className = "food-photo";
+    image.src = option.image;
+    image.alt = option.alt;
+    image.loading = index < 2 ? "eager" : "lazy";
+    image.decoding = "async";
+    image.addEventListener("load", () => button.classList.remove("loading"), { once: true });
+    const fallback = document.createElement("span");
+    fallback.className = "food-photo-fallback";
+    fallback.textContent = "Sawir lama heli karo";
+    image.addEventListener("error", () => {
+      button.classList.remove("loading");
+      image.hidden = true;
+      fallback.classList.add("visible");
+    }, { once: true });
+    imageWrap.append(image, fallback);
+    const label = document.createElement("span");
+    label.className = "choice-label";
+    label.textContent = option.displayName;
+    button.append(imageWrap, label);
+    button.addEventListener("click", () => {
+      selectOption(grid, button);
+      food = option.value;
+    });
+    grid.append(button);
+  });
+}
+
+function renderRestaurantOptions() {
+  const grid = document.getElementById("places");
+  restaurantOptions.forEach(option => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "choice restaurant-choice";
+    button.setAttribute("aria-pressed", "false");
+    const mark = document.createElement("span");
+    mark.className = "restaurant-mark";
+    const wordmark = document.createElement("span");
+    wordmark.className = "restaurant-wordmark";
+    wordmark.textContent = option.displayName;
+    if (option.image) {
+      const logo = document.createElement("img");
+      logo.className = "restaurant-logo";
+      logo.src = option.image;
+      logo.alt = `${option.displayName} ${option.verified ? "official" : "provided"} logo`;
+      logo.loading = "lazy";
+      logo.decoding = "async";
+      wordmark.hidden = true;
+      logo.addEventListener("error", () => { logo.remove(); wordmark.hidden = false; }, { once: true });
+      mark.append(logo, wordmark);
+    } else {
+      mark.append(wordmark);
+    }
+    const name = document.createElement("span");
+    name.className = "restaurant-name";
+    name.textContent = option.displayName;
+    const status = document.createElement("span");
+    status.className = `brand-status${option.verified ? " verified" : ""}`;
+    status.textContent = option.verified ? "Official logo verified" : option.image ? "Provided logo · source unverified" : "Text wordmark · logo unverified";
+    button.append(mark, name, status);
+    button.addEventListener("click", () => {
+      selectOption(grid, button);
+      place = option.value;
+    });
+    grid.append(button);
+  });
+}
+
+renderFoodOptions();
+renderRestaurantOptions();
+
+const statusLabels = { pending: "Pending", accepted: "Accepted", declined: "Declined", cancelled: "Cancelled" };
+
+async function api(path, options = {}, token = null) {
+  const response = await fetch(path, { ...options, headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(token ? { "Authorization": `Bearer ${token}` } : {}), ...options.headers } });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || "Something went wrong. Please try again.");
+  return result;
+}
+
+function setFeedback(id, message = "", error = false) {
+  const el = document.getElementById(id);
+  el.textContent = message;
+  el.classList.toggle("error", error);
+}
+
+function updateStatus(elementId, status) {
+  document.getElementById(elementId).textContent = `Status: ${statusLabels[status] || status}`;
+}
+
+function updateCreatorView(appointment) {
+  createdAppointment = appointment;
+  updateStatus("creatorStatus", appointment.status);
+  document.getElementById("cancelButton").hidden = appointment.status === "cancelled";
+}
+
+function renderInvite(appointment, isOrganizer) {
+  const details = document.getElementById("inviteDetails");
+  details.replaceChildren();
+  [["📅 Date", appointment.date], ["🕕 Time", appointment.time], ["📍 Location", appointment.location], ["🍽️ Food", appointment.food]].forEach(([label, value]) => {
+    const line = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = `${label}: `;
+    line.append(strong, document.createTextNode(value));
+    details.append(line);
+  });
+  updateStatus("inviteStatus", appointment.status);
+  const actions = document.getElementById("inviteActions");
+  actions.hidden = isOrganizer || appointment.status !== "pending";
+  document.getElementById("inviteCancelButton").hidden = !isOrganizer || appointment.status === "cancelled";
+}
+
+async function openAppointmentLink() {
+  const params = new URLSearchParams(location.hash.slice(1));
+  invitationToken = params.get("invite");
+  managerToken = params.get("manage");
+  if (invitationToken) invitationLink = `${location.origin}/#invite=${encodeURIComponent(invitationToken)}`;
+  if (managerToken) organizerLink = `${location.origin}/#manage=${encodeURIComponent(managerToken)}`;
+  const token = invitationToken || managerToken;
+  if (!token) return;
+  show("invite");
+  setFeedback("inviteFeedback", "Loading appointment…");
+  try {
+    const result = await api("/api/appointment", {}, token);
+    renderInvite(result.appointment, result.isOrganizer);
+    if (result.isOrganizer) {
+      managerToken = token;
+      createdAppointment = result.appointment;
+      setFeedback("inviteFeedback", "Organizer view. The recipient’s response appears here when refreshed.");
+    } else {
+      invitationToken = token;
+      setFeedback("inviteFeedback", pendingStatusMessage || "");
+    }
+  } catch (error) {
+    setFeedback("inviteFeedback", error.message, true);
+  }
+}
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function nextFood() {
+  if (!food) return alert("Fadlan dooro cuntada ❤️");
+  if (!place) return alert("Fadlan dooro makhaayadda ❤️");
+  show("date");
+}
+
+function nextDate() {
+  selectedDate = document.getElementById("day").value;
+  selectedTime = document.getElementById("time").value;
+  if (!selectedDate || !selectedTime) return alert("Fadlan dooro maalinta iyo waqtiga 💕");
+  document.getElementById("summary").textContent =
+    `${food} 🍽️ • ${place} • ${selectedDate} • ${selectedTime}`;
+  show("ask");
+}
+
+async function yes() {
+  const button = document.querySelector("#ask .answers button");
+  button.disabled = true;
+  button.textContent = "Creating appointment…";
+  try {
+    const result = await api("/api/appointments", { method: "POST", body: JSON.stringify({ food, location: place, date: selectedDate, time: selectedTime }) });
+    createdAppointment = result.appointment;
+    invitationToken = new URLSearchParams(new URL(result.invitationUrl).hash.slice(1)).get("invite");
+    managerToken = new URLSearchParams(new URL(result.manageUrl).hash.slice(1)).get("manage");
+    invitationLink = result.invitationUrl;
+    organizerLink = result.manageUrl;
+    document.getElementById("finalSummary").textContent = `${food} 🍽️ | ${place} | ${selectedDate} | ${selectedTime}`;
+    updateCreatorView(createdAppointment);
+    setFeedback("creatorFeedback", "Appointment created and saved.");
+    show("yes");
+  } catch (error) {
+    setFeedback("creatorFeedback", error.message, true);
+    alert(error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "HAA 💕";
+  }
+}
+
+function no() { show("no"); }
+
+function sendWhatsApp() {
+  if (!createdAppointment || !invitationToken) return setFeedback("creatorFeedback", "Create an appointment first.", true);
+  const message = `❤️ Waxaan kuu sameeyay ballan!\n📅 Date: ${createdAppointment.date}\n🕕 Time: ${createdAppointment.time}\n📍 Location: ${createdAppointment.location}\n🍽️ Details: ${createdAppointment.food}\nXaqiiji ballantaada: ${invitationLink}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+}
+
+async function copyInvitation() {
+  if (!invitationToken) return setFeedback("creatorFeedback", "Create an appointment first.", true);
+  const invitationUrl = invitationLink;
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("Clipboard access unavailable");
+    await navigator.clipboard.writeText(invitationUrl);
+    setFeedback("creatorFeedback", "Invitation link copied!");
+  } catch {
+    window.prompt("Copy your invitation link:", invitationUrl);
+    setFeedback("creatorFeedback", "Select and copy the invitation link to share it.");
+  }
+}
+
+async function copyOrganizerLink() {
+  if (!managerToken) return setFeedback("creatorFeedback", "Create an appointment first.", true);
+  const manageUrl = organizerLink;
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("Clipboard access unavailable");
+    await navigator.clipboard.writeText(manageUrl);
+    setFeedback("creatorFeedback", "Organizer link copied. Keep it private; it can cancel the appointment.");
+  } catch {
+    window.prompt("Keep this private organizer link:", manageUrl);
+    setFeedback("creatorFeedback", "Copy and keep your organizer link private.");
+  }
+}
+
+async function refreshAppointment() {
+  if (!managerToken) return setFeedback("creatorFeedback", "Create an appointment first.", true);
+  setFeedback("creatorFeedback", "Refreshing appointment status…");
+  try {
+    const result = await api("/api/appointment", {}, managerToken);
+    updateCreatorView(result.appointment);
+    setFeedback("creatorFeedback", "Appointment status is up to date.");
+  } catch (error) { setFeedback("creatorFeedback", error.message, true); }
+}
+
+async function respondToInvitation(status) {
+  if (!invitationToken) return setFeedback("inviteFeedback", "This invitation link is missing its token.", true);
+  const buttons = [document.getElementById("acceptButton"), document.getElementById("declineButton")];
+  buttons.forEach(button => button.disabled = true);
+  setFeedback("inviteFeedback", "Saving your response…");
+  try {
+    const result = await api("/api/appointment/respond", { method: "POST", body: JSON.stringify({ status }) }, invitationToken);
+    renderInvite(result.appointment, false);
+    pendingStatusMessage = `Your response was saved: ${statusLabels[result.appointment.status]}.`;
+    setFeedback("inviteFeedback", pendingStatusMessage);
+  } catch (error) {
+    setFeedback("inviteFeedback", error.message, true);
+    buttons.forEach(button => button.disabled = false);
+  }
+}
+
+async function refreshInviteStatus() {
+  const token = invitationToken || managerToken;
+  if (!token) return setFeedback("inviteFeedback", "This invitation link is missing its token.", true);
+  const button = document.getElementById("inviteRefreshButton");
+  button.disabled = true;
+  setFeedback("inviteFeedback", "Refreshing appointment status…");
+  try {
+    const result = await api("/api/appointment", {}, token);
+    renderInvite(result.appointment, result.isOrganizer);
+    setFeedback("inviteFeedback", "Appointment status is up to date.");
+  } catch (error) { setFeedback("inviteFeedback", error.message, true); }
+  finally { button.disabled = false; }
+}
+
+async function cancelAppointment(buttonId = "cancelButton") {
+  if (!managerToken || !confirm("Cancel this appointment?")) return;
+  const button = document.getElementById(buttonId);
+  const feedbackId = buttonId === "inviteCancelButton" ? "inviteFeedback" : "creatorFeedback";
+  button.disabled = true;
+  setFeedback(feedbackId, "Cancelling appointment…");
+  try {
+    const result = await api("/api/appointment/cancel", { method: "POST", body: JSON.stringify({ status: "cancelled" }) }, managerToken);
+    updateCreatorView(result.appointment);
+    updateStatus("inviteStatus", result.appointment.status);
+    document.getElementById("inviteCancelButton").hidden = true;
+    setFeedback(feedbackId, "Appointment cancelled.");
+  } catch (error) {
+    setFeedback(feedbackId, error.message, true);
+  } finally { button.disabled = false; }
+}
+
+document.getElementById("nextFoodButton").addEventListener("click", nextFood);
+document.getElementById("nextDateButton").addEventListener("click", nextDate);
+document.getElementById("backFoodButton").addEventListener("click", () => show("food"));
+document.getElementById("yesButton").addEventListener("click", yes);
+document.getElementById("noBtn").addEventListener("click", no);
+document.getElementById("retryAskButton").addEventListener("click", () => show("ask"));
+document.getElementById("whatsappButton").addEventListener("click", sendWhatsApp);
+document.getElementById("copyButton").addEventListener("click", copyInvitation);
+document.getElementById("refreshButton").addEventListener("click", refreshAppointment);
+document.getElementById("copyManageButton").addEventListener("click", copyOrganizerLink);
+document.getElementById("cancelButton").addEventListener("click", () => cancelAppointment());
+document.getElementById("inviteCancelButton").addEventListener("click", () => cancelAppointment("inviteCancelButton"));
+document.getElementById("acceptButton").addEventListener("click", () => respondToInvitation("accepted"));
+document.getElementById("declineButton").addEventListener("click", () => respondToInvitation("declined"));
+document.getElementById("inviteRefreshButton").addEventListener("click", refreshInviteStatus);
+openAppointmentLink();
+</script>
+</body>
+</html>
+
